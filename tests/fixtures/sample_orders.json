@@ -1,0 +1,158 @@
+{
+  "EC_001": {
+    "case_id": "EC_001",
+    "customer_request_message": "Tôi cho rằng đơn hàng được giao trễ. Hãy kiểm tra nguyên nhân và quyền lợi phù hợp.",
+    "order": {
+      "order_id": "e2a03ccf5ea816036608b2d8c3ab8e60",
+      "customer_id": "74a9ec598bb26000a98c7355b06b39b2",
+      "order_status": "delivered",
+      "order_purchase_timestamp": "2017-11-19 11:39:41",
+      "order_approved_at": "2017-11-19 11:50:50",
+      "order_delivered_carrier_date": "2017-12-13 13:45:24",
+      "order_delivered_customer_date": "2017-12-15 18:56:35",
+      "order_estimated_delivery_date": "2017-12-12 00:00:00"
+    },
+    "customer": {
+      "customer_id": "74a9ec598bb26000a98c7355b06b39b2",
+      "customer_unique_id": "622f776c269b21b18eae6243218067c8",
+      "customer_zip_code_prefix": 6440,
+      "customer_city": "barueri",
+      "customer_state": "SP"
+    },
+    "items": [
+      {
+        "order_id": "e2a03ccf5ea816036608b2d8c3ab8e60",
+        "order_item_id": 1,
+        "product_id": "d67dba1c3b73cd096ec52d02ba7f359a",
+        "seller_id": "f7496d659ca9fdaf323c0aae84176632",
+        "shipping_limit_date": "2017-12-04 11:50:50",
+        "price": 119.9,
+        "freight_value": 12.04
+      }
+    ],
+    "payments": [
+      {
+        "order_id": "e2a03ccf5ea816036608b2d8c3ab8e60",
+        "payment_sequential": 1,
+        "payment_type": "credit_card",
+        "payment_installments": 1,
+        "payment_value": 131.94
+      }
+    ],
+    "sellers": {
+      "f7496d659ca9fdaf323c0aae84176632": {
+        "seller_id": "f7496d659ca9fdaf323c0aae84176632",
+        "seller_zip_code_prefix": 4156,
+        "seller_city": "sao paulo",
+        "seller_state": "SP"
+      }
+    }
+  },
+  "EC_002": {
+    "case_id": "EC_002",
+    "customer_request_message": "Tôi cho rằng đơn hàng được giao trễ. Hãy kiểm tra nguyên nhân và quyền lợi phù hợp.",
+    "order": {
+      "order_id": "8067c5e4834f3c0a3c8a4e921d65c5b1",
+      "customer_id": "d06d665f5cbc5c4d6d32b95e3366753a",
+      "order_status": "delivered",
+      "order_purchase_timestamp": "2018-01-24 16:28:22",
+      "order_approved_at": "2018-01-24 16:39:42",
+      "order_delivered_carrier_date": "2018-01-29 17:58:40",
+      "order_delivered_customer_date": "2018-01-31 21:34:47",
+      "order_estimated_delivery_date": "2018-02-09 00:00:00"
+    },
+    "customer": {
+      "customer_id": "d06d665f5cbc5c4d6d32b95e3366753a",
+      "customer_unique_id": "c0d20a347b03d509b4ff01af068b3acf",
+      "customer_zip_code_prefix": 2017,
+      "customer_city": "sao paulo",
+      "customer_state": "SP"
+    },
+    "items": [
+      {
+        "order_id": "8067c5e4834f3c0a3c8a4e921d65c5b1",
+        "order_item_id": 1,
+        "product_id": "dbb67791e405873b259e4656bf971246",
+        "seller_id": "6973a06f484aacf400ece213dbf3d946",
+        "shipping_limit_date": "2018-01-31 16:39:42",
+        "price": 81.99,
+        "freight_value": 8.32
+      },
+      {
+        "order_id": "8067c5e4834f3c0a3c8a4e921d65c5b1",
+        "order_item_id": 2,
+        "product_id": "dbb67791e405873b259e4656bf971246",
+        "seller_id": "6973a06f484aacf400ece213dbf3d946",
+        "shipping_limit_date": "2018-01-31 16:39:42",
+        "price": 81.99,
+        "freight_value": 8.32
+      }
+    ],
+    "payments": [
+      {
+        "order_id": "8067c5e4834f3c0a3c8a4e921d65c5b1",
+        "payment_sequential": 1,
+        "payment_type": "credit_card",
+        "payment_installments": 1,
+        "payment_value": 180.62
+      }
+    ],
+    "sellers": {
+      "6973a06f484aacf400ece213dbf3d946": {
+        "seller_id": "6973a06f484aacf400ece213dbf3d946",
+        "seller_zip_code_prefix": 12230,
+        "seller_city": "sao jose dos campos",
+        "seller_state": "SP"
+      }
+    }
+  },
+  "EC_003": {
+    "case_id": "EC_003",
+    "customer_request_message": "Đơn hàng không được hoàn tất dù tôi đã thanh toán. Hãy kiểm tra và đề xuất xử lý.",
+    "order": {
+      "order_id": "71303d7e93b399f5bcd537d124c0bcfa",
+      "customer_id": "b106b360fe2ef8849fbbd056f777b4d5",
+      "order_status": "canceled",
+      "order_purchase_timestamp": "2016-10-02 22:07:52",
+      "order_approved_at": "2016-10-06 15:50:56",
+      "order_delivered_carrier_date": null,
+      "order_delivered_customer_date": null,
+      "order_estimated_delivery_date": "2016-10-25 00:00:00"
+    },
+    "customer": {
+      "customer_id": "b106b360fe2ef8849fbbd056f777b4d5",
+      "customer_unique_id": "0eb1ee9dba87f5b36b4613a65074337c",
+      "customer_zip_code_prefix": 2975,
+      "customer_city": "sao paulo",
+      "customer_state": "SP"
+    },
+    "items": [
+      {
+        "order_id": "71303d7e93b399f5bcd537d124c0bcfa",
+        "order_item_id": 1,
+        "product_id": "d2998d7ced12f83f9b832f33cf6507b6",
+        "seller_id": "25e6ffe976bd75618accfe16cefcbd0d",
+        "shipping_limit_date": "2016-10-21 16:19:54",
+        "price": 100.0,
+        "freight_value": 9.34
+      }
+    ],
+    "payments": [
+      {
+        "order_id": "71303d7e93b399f5bcd537d124c0bcfa",
+        "payment_sequential": 1,
+        "payment_type": "credit_card",
+        "payment_installments": 1,
+        "payment_value": 109.34
+      }
+    ],
+    "sellers": {
+      "25e6ffe976bd75618accfe16cefcbd0d": {
+        "seller_id": "25e6ffe976bd75618accfe16cefcbd0d",
+        "seller_zip_code_prefix": 5503,
+        "seller_city": "sao paulo",
+        "seller_state": "SP"
+      }
+    }
+  }
+}
