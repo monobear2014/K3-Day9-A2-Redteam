@@ -22,7 +22,7 @@ Rang buoc Python ap len ke hoach cua Coordinator:
 import json
 from pathlib import Path
 
-from . import config
+from . import config, rules
 from .agents import coordinator, delivery, order_seller, payment, policy, verifier
 from .data_loader import get_data
 from .schemas import CaseFacts, CaseOutput
@@ -96,6 +96,20 @@ def process_case(path: Path, tracer: Tracer) -> CaseOutput:
     )
 
     output, report = verifier.run(facts, policy_v, all_llm_ok)
+    # Reflector is independent from Policy.  Its graph decision is logged so a
+    # future orchestration layer can route a rejected result to Supervisor.
+    verifier_v = verifier.judge(facts, output)
+    report["judge"] = verifier_v.model_dump(by_alias=True)
+    if verifier_v.next_node == "supervisor":
+        # Current graph has no mutable Supervisor node; re-run policy with the
+        # deterministic baseline, then rebuild and re-check once.
+        policy_v = policy.run(facts, order_v, pay_v, del_v)
+        policy_v.primary_issue = rules.decide(facts).primary_issue
+        output, corrected_report = verifier.run(facts, policy_v, all_llm_ok=False)
+        report["supervisor_correction"] = corrected_report
+        report["judge_after_correction"] = verifier.judge(
+            facts, output
+        ).model_dump(by_alias=True)
     report["dispatched"] = sorted(assigned)
     report["dispatch_reason"] = dispatch_plan.notes
     tracer.log(case_id, "verified", "verifier", report)

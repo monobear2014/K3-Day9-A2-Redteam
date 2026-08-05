@@ -11,20 +11,10 @@ breaching seller khong. Neu model hay nham, them 1-2 vi du ngan vao SYSTEM.
 
 from ..llm_client import call_json
 from ..schemas import CaseFacts, OrderSellerVerdict
-from .base import JSON_RULE, facts_brief
+from .base import facts_brief
+from .workers import ORDER_SELLER_SYSTEM
 
-SYSTEM = f"""{JSON_RULE}
-
-Vai tro cua ban: Order & Seller Analyst.
-Doc du lieu don hang da duoc trich san va tra loi:
-- Don o trang thai gi (delivered / canceled / unavailable / khac).
-- Seller nao ban giao hang tre? Chi ke seller co "handoff_after_limit": true.
-
-Truong "handoff_after_limit" DA duoc he thong tinh san. Dung tu tinh lai ngay thang.
-
-Tra ve JSON dung dang:
-{{"order_status": "<chuoi>", "breaching_seller_ids": ["<seller_id>"], "notes": "<mot cau tieng Viet>"}}
-"""
+SYSTEM = ORDER_SELLER_SYSTEM
 
 
 def run(f: CaseFacts, use_llm: bool = True) -> OrderSellerVerdict:

@@ -14,23 +14,10 @@ Khi do delivered_late = None, KHONG duoc coi la "khong tre".
 
 from ..llm_client import call_json
 from ..schemas import CaseFacts, DeliveryVerdict
-from .base import JSON_RULE, facts_brief
+from .base import facts_brief
+from .workers import DELIVERY_SYSTEM
 
-SYSTEM = f"""{JSON_RULE}
-
-Vai tro cua ban: Delivery Timeline Analyst.
-He thong da so san ngay va cung cap:
-- delivered_late: don giao sau estimated_delivery_date hay khong (null = chua giao).
-- carrier_handoff_late: seller ban giao cho don vi van chuyen qua shipping_limit_date.
-
-Quy trach nhiem theo dung quy tac:
-- delivered_late = true  va carrier_handoff_late = true  -> "seller"
-- delivered_late = true  va carrier_handoff_late = false -> "logistics_provider"
-- con lai -> "none"
-
-Tra ve JSON dung dang:
-{{"attribution": "seller|logistics_provider|none", "notes": "<mot cau tieng Viet>"}}
-"""
+SYSTEM = DELIVERY_SYSTEM
 
 
 def _deterministic_attribution(f: CaseFacts) -> str:
