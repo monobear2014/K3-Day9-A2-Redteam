@@ -1,0 +1,22 @@
+{
+  "model": "qwen2.5:7b",
+  "parameter_size": "7B",
+  "provider": "ollama",
+  "endpoint": "http://localhost:11434/v1",
+  "framework": "custom multi-agent orchestration (openai-sdk + pydantic)",
+  "runtime": {
+    "python": "3.11",
+    "total_seconds": 1.06,
+    "cases": 50
+  },
+  "policy_version": "EC_POLICY_V1",
+  "agents": [
+    "coordinator",
+    "order_seller",
+    "payment",
+    "delivery",
+    "policy",
+    "verifier"
+  ],
+  "generated_at": "2026-08-05T03:51:33.833376+00:00"
+}
