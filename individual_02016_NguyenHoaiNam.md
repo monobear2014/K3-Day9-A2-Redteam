@@ -5,7 +5,7 @@
 | Thông tin       | Nội dung                                             |
 | --------------- | ---------------------------------------------------- |
 | Họ và tên       | Nguyễn Hoài Nam                                       |
-| MSSV            | 02016                                                 |
+| MSSV            | 2A202602016                                                 |
 | Khóa/Lớp        | K3                                                    |
 | Vai trò chính   | Coordinator & Verifier — thiết kế kiến trúc, ra quyết định kỹ thuật |
 | Ngày hoàn thành | 2026-08-05                                            |
@@ -112,7 +112,11 @@ python run.py
 
 - **Kết quả mong đợi:** 20 test pass; health check OK; 50/50 case sinh output hợp lệ.
 - **Kết quả thực tế:** `20 passed in 0.09s`; health check `OK` trong 1.3s;
-  `--no-llm` xong 50/50 trong 1.1s; lượt chạy LLM thật đo được 3.2s/case ở case đơn lẻ.
+  `--no-llm` xong 50/50 trong 1.1s. Lượt chạy LLM thật cuối cùng: **50/50 case trong
+  1954.8s** trên `llama-3.1-8b-instant`, 500 event trace, và **cả 50 output khớp
+  chính xác kết quả của engine deterministic** (đối chiếu bằng script riêng).
+  41/50 case LLM đồng thuận với deterministic; 9 case còn lại bị Verifier phủ quyết
+  nên hạ `confidence` xuống 0.60, output vẫn đúng.
 - **Artifact/log:** `logging/trace.jsonl`, `logging/metadata.json`, `output/EC_*.json`.
   Không chứa secret — API key chỉ nằm trong `.env` và đã bị `.gitignore` chặn.
 
