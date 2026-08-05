@@ -200,3 +200,25 @@ Trong repo phải có thêm:
 2. Khi nộp bài, chỉ nén folder `output/` thành file zip; không đưa source code, `.env` hoặc các file audit vào zip này.
 3. Luôn commit toàn bộ source code lên repo trước khi nộp file output zip để chấm điểm.
 4. API key và secret phải đặt trong file `.env` và không được commit. Tên model sử dụng phải được khai báo rõ trong source code, đồng thời ghi lại trong `metadata.json` (Tức là model name không ghi vào .env, cho vào code để chấm)
+
+
+
+## ⚠️ LƯU Ý QUAN TRỌNG KHI THAM GIA
+
+1. Mỗi agent chỉ được sử dụng model dưới hoặc bằng **10B parameters**, chạy local hoặc qua provider tùy ý.
+
+2. Khi nộp bài, chỉ nén folder **output/** thành file ZIP; **không đưa source code, `.env` hoặc các file audit vào ZIP**.
+
+3. Luôn commit toàn bộ source code lên repo trước khi nộp file **output ZIP** để chấm điểm.
+
+4. API key và secret phải đặt trong **`.env`** và **không được commit**. Tên model phải khai báo rõ trong source code và **metadata.json**, không đặt trong `.env`.
+
+### ⚠️ WARNING
+
+- Bất kỳ hành vi gian lận hoặc không tuân thủ sẽ bị tính **0 điểm**.
+
+---
+
+> Mọi thắc mắc liên hệ trực tiếp **Lab Coach** để giải đáp.
+>
+> Tuân thủ quy định để đảm bảo sự công bằng cho tất cả các đội.
