@@ -41,7 +41,7 @@ def _deterministic_attribution(f: CaseFacts) -> str:
     return "none"
 
 
-def run(f: CaseFacts) -> DeliveryVerdict:
+def run(f: CaseFacts, use_llm: bool = True) -> DeliveryVerdict:
     oid = f.claimed_order_id
     baseline = _deterministic_attribution(f)
     verdict = DeliveryVerdict(
@@ -54,6 +54,9 @@ def run(f: CaseFacts) -> DeliveryVerdict:
 
     if not f.order_found:
         verdict.notes = "Khong tim thay order trong CSV."
+        return verdict
+    if not use_llm:
+        verdict.notes = "khong duoc dispatch; dung ket qua deterministic"
         return verdict
 
     out = call_json(SYSTEM, facts_brief(f))

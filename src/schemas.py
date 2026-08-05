@@ -107,6 +107,17 @@ class BaseVerdict(BaseModel):
     llm_ok: bool = True  # False = LLM fail, da fallback sang deterministic
 
 
+class DispatchPlan(BaseVerdict):
+    """Ke hoach giao viec do Coordinator Agent quyet dinh (README muc 7: 'giao viec')."""
+
+    agent: str = "coordinator"
+    dispatch: list[Literal["order_seller", "payment", "delivery"]] = Field(
+        default_factory=list
+    )
+    focus: Literal["order_status", "delivery", "payment", "unknown"] = "unknown"
+    forced_back: list[str] = Field(default_factory=list)  # Python bo sung lai
+
+
 class OrderSellerVerdict(BaseVerdict):
     agent: str = "order_seller"
     order_status: Optional[str] = None

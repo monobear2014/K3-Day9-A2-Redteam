@@ -30,7 +30,7 @@ Tra ve JSON dung dang:
 """
 
 
-def run(f: CaseFacts) -> PaymentVerdict:
+def run(f: CaseFacts, use_llm: bool = True) -> PaymentVerdict:
     oid = f.claimed_order_id
     verdict = PaymentVerdict(
         payment_ids=[f"{oid}:{p.payment_sequential}" for p in f.payments],
@@ -43,6 +43,9 @@ def run(f: CaseFacts) -> PaymentVerdict:
 
     if not f.order_found:
         verdict.notes = "Khong tim thay order trong CSV."
+        return verdict
+    if not use_llm:
+        verdict.notes = "khong duoc dispatch; dung ket qua deterministic"
         return verdict
 
     out = call_json(SYSTEM, facts_brief(f))

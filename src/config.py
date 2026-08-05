@@ -29,6 +29,10 @@ MODEL_PROVIDER = "ollama"
 LLM_BASE_URL = os.getenv("LLM_BASE_URL") or "http://localhost:11434/v1"
 LLM_API_KEY = os.getenv("LLM_API_KEY") or "ollama"
 
+# Tat han LLM (run.py --no-llm). Phai la cong tac that: neu chi tro vao port chet
+# thi moi call van chay het retry cua tenacity + retry noi bo cua SDK -> treo.
+USE_LLM = True
+
 TEMPERATURE = 0.0  # bai nay can tinh on dinh, khong can sang tao
 MAX_TOKENS = 800
 LLM_TIMEOUT_S = 60

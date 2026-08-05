@@ -52,6 +52,9 @@ def _raw_call(system: str, user: str) -> str:
 
 def call_json(system: str, user: str) -> Optional[dict]:
     """Goi LLM, tra dict hoac None neu that bai. KHONG BAO GIO raise len agent."""
+    if not config.USE_LLM:
+        return None  # cong tac --no-llm: ve thang, khong ton mot vong retry nao
+
     try:
         text = _raw_call(system, user)
     except Exception as exc:  # noqa: BLE001 - agent can biet fail, khong can loai loi

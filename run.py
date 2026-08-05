@@ -6,14 +6,13 @@
 """
 
 import argparse
-import os
 import sys
 import time
 
 from tqdm import tqdm
 
 from src import config
-from src.coordinator import process_case
+from src.pipeline import process_case
 from src.trace import Tracer, write_metadata
 
 
@@ -28,10 +27,7 @@ def main() -> int:
     args = ap.parse_args()
 
     if args.no_llm:
-        os.environ["LLM_BASE_URL"] = "http://127.0.0.1:1"  # ep fail nhanh -> fallback
-        config.LLM_BASE_URL = "http://127.0.0.1:1"
-        config.LLM_MAX_RETRIES = 1
-        config.LLM_TIMEOUT_S = 1
+        config.USE_LLM = False
 
     if not config.INPUT_DIR.exists():
         print(f"Khong thay thu muc input: {config.INPUT_DIR}")
@@ -45,7 +41,7 @@ def main() -> int:
         return 1
 
     print(f"Model   : {config.MODEL_NAME} ({config.MODEL_PARAMETER_SIZE})")
-    print(f"Endpoint: {config.LLM_BASE_URL}")
+    print(f"Endpoint: {config.LLM_BASE_URL if config.USE_LLM else '(--no-llm: tat LLM)'}")
     print(f"Cases   : {len(files)}\n")
 
     tracer = Tracer()

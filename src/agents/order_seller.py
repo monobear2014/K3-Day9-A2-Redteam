@@ -27,7 +27,7 @@ Tra ve JSON dung dang:
 """
 
 
-def run(f: CaseFacts) -> OrderSellerVerdict:
+def run(f: CaseFacts, use_llm: bool = True) -> OrderSellerVerdict:
     oid = f.claimed_order_id
     item_ids = [f"{oid}:{i.order_item_id}" for i in f.items]
 
@@ -45,6 +45,10 @@ def run(f: CaseFacts) -> OrderSellerVerdict:
 
     if not f.order_found:
         verdict.notes = "Khong tim thay order trong CSV."
+        return verdict
+    if not use_llm:
+        # Coordinator khong dispatch agent nay -> giu ket qua deterministic.
+        verdict.notes = "khong duoc dispatch; dung ket qua deterministic"
         return verdict
 
     out = call_json(SYSTEM, facts_brief(f))
