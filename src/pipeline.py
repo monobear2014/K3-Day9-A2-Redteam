@@ -23,7 +23,7 @@ import json
 from pathlib import Path
 
 from . import config
-from .agents import coordinator, delivery, order_seller, payment, policy, verifier
+from .agents import coordinator, delivery, order_agent, payment, policy, verifier
 from .data_loader import get_data
 from .schemas import CaseFacts, CaseOutput
 from .trace import Tracer
@@ -66,7 +66,7 @@ def process_case(path: Path, tracer: Tracer) -> CaseOutput:
     assigned = set(dispatch_plan.dispatch)
 
     # --- 3. Domain agent chay va handoff sang Policy ---
-    order_v = order_seller.run(facts, use_llm="order_seller" in assigned)
+    order_v = order_agent.run(facts, use_llm="order_seller" in assigned)
     tracer.handoff(case_id, "order_seller", "policy", order_v.model_dump())
 
     pay_v = payment.run(facts, use_llm="payment" in assigned)
