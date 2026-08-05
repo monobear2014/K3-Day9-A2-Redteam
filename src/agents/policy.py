@@ -1,4 +1,4 @@
-"""Policy Agent - ap EC_POLICY_V1.
+"""Policy Agent - ap EC_POLICY_V1 to isolated, cleaned CaseFacts.
 
 OWNER: P4
 
@@ -7,9 +7,12 @@ dua tren bang chung 3 agent phia truoc handoff sang. Cac thu dan xuat tu
 primary_issue (root cause, party, refund, action) deu la anh xa 1-1 nen de Python
 suy ra - khong co ly do bat model 7B nho lai bang tra cuu.
 
-TODO(P4): phan de sai nhat la THU TU UU TIEN. Neu model hay chon rule 5/6 trong khi
-rule 3/4 da khop, them vi du doi lap vao SYSTEM va viet test trong tests/test_rules.py.
+The agent never accesses the database/CSV.  Its only inputs are CaseFacts and
+the three upstream verdicts.  Python validates the LLM draft against the first
+matching rule before any regulated code, refund, party, or action is emitted.
 """
+
+from pathlib import Path
 
 from .. import rules
 from ..llm_client import call_json
@@ -22,45 +25,15 @@ from ..schemas import (
     RankedCause,
     ResponsibleParty,
 )
+from ..tools.policy_tools import confidence_for_draft, is_priority_consistent
 from .base import JSON_RULE, facts_brief
 
-SYSTEM = f"""{JSON_RULE}
-
-Vai tro cua ban: Policy Officer, ap dung EC_POLICY_V1.
-Chon DUNG MOT primary_issue, xet theo THU TU UU TIEN tu tren xuong.
-Rule dau tien khop la ket qua cuoi cung - khong duoc xet tiep rule ben duoi.
-
-1. canceled_order_paid     : order_status = "canceled" VA payment_total_brl > 0
-2. unavailable_order_paid  : order_status = "unavailable" VA payment_total_brl > 0
-3. late_delivery_seller    : delivered_late = true VA carrier_handoff_late = true
-4. late_delivery_logistics : delivered_late = true VA carrier_handoff_late = false
-5. valid_split_payment     : payment_row_count >= 2 VA payment_matches = true
-6. unsupported_late_claim  : delivered_late = false VA payment_matches = true
-
-CANH BAO - loi hay gap nhat: KHONG duoc chon rule 5 (valid_split_payment) khi
-payment_row_count = 1. Rule 5 BAT BUOC phai co payment_row_count >= 2. Don chi co
-MOT dong thanh toan thi KHONG BAO GIO la valid_split_payment, du payment_matches = true.
-Truong hop do, neu delivered_late = false thi la rule 6 (unsupported_late_claim).
-
-Loi khieu nai cua khach KHONG phai bang chung. Chi cham vao du lieu.
-
-Truoc khi chon, dien "checks" bang dung gia tri lay tu input. Roi chon rule dau tien
-co du dieu kien. Ghi so rule vao matched_rule cho khop voi primary_issue.
-
-Tra ve JSON dung dang:
-{{"checks": {{"is_canceled": <bool>, "is_unavailable": <bool>, "delivered_late": <bool|null>, "carrier_handoff_late": <bool>, "payment_row_count": <int>, "payment_matches": <bool>}}, "matched_rule": <1-6>, "primary_issue": "<mot trong 6 gia tri tren>", "notes": "<mot cau ngan>"}}
-"""
-
-# matched_rule -> primary_issue tuong ung. Model 8B hay noi dung trong notes nhung
-# dien sai nhan, nen doi chieu hai truong nay de bat mau thuan.
-RULE_TO_ISSUE = {
-    1: "canceled_order_paid",
-    2: "unavailable_order_paid",
-    3: "late_delivery_seller",
-    4: "late_delivery_logistics",
-    5: "valid_split_payment",
-    6: "unsupported_late_claim",
-}
+# Giai quyet xung dot merge: lay prompt file ngoai cua nhanh vu.
+# Prompt do viet duoi dang IF / ELSE IF tuong minh, tot hon ban inline truoc day.
+# Ban inline co mot canh bao rat manh ve rule 5, va luot chay do cho thay no lam
+# model 8B ne rule 5 qua da - 9 case chon nham nguoc lai sang rule 6.
+PROMPT_PATH = Path(__file__).with_name("prompts") / "policy.txt"
+SYSTEM = f"{JSON_RULE}\n\n{PROMPT_PATH.read_text(encoding='utf-8')}"
 
 VALID_ISSUES = set(rules.ISSUE_MAP.keys())
 
@@ -89,32 +62,25 @@ def run(
         out = call_json(SYSTEM, user)
         if out:
             candidate = out.get("primary_issue")
-            rule = out.get("matched_rule")
-
-            # Doi chieu matched_rule voi primary_issue. Model 8B hay lap luan dung
-            # trong notes nhung dien sai nhan; hai truong lech nhau la dau hieu do.
-            if candidate in VALID_ISSUES and RULE_TO_ISSUE.get(rule) not in (
-                None,
-                candidate,
-            ):
-                notes = (
-                    f"mau thuan: matched_rule={rule} ({RULE_TO_ISSUE[rule]}) "
-                    f"nhung primary_issue={candidate}; dung deterministic"
-                )
-                candidate = None  # khong tin ket luan nay
-
-            # Chan truc tiep loi hay gap nhat: rule 5 doi >= 2 dong thanh toan.
-            if candidate == "valid_split_payment" and f.payment_row_count < 2:
-                notes = (
-                    f"tu choi valid_split_payment: payment_row_count="
-                    f"{f.payment_row_count} < 2; dung deterministic"
-                )
-                candidate = None
-
+            # Giai quyet xung dot merge: dung is_priority_consistent() cua nhanh vu
+            # (chat hon phep doi chieu matched_rule truoc day), nhung VAN cho ket luan
+            # cua LLM di tiep sang Verifier khi no sai.
+            #
+            # Ly do: neu chan ngay tai day thi policy_v.primary_issue luon bang ket qua
+            # deterministic, Verifier khong bao gio thay bat dong, va confidence se luon
+            # la 0.95 - mat han tin hieu that. Cu de bat dong noi len de Verifier phu
+            # quyet va ha confidence xuong 0.60. Output cuoi cung van dung nhu nhau.
             if candidate in VALID_ISSUES:
+                consistent = is_priority_consistent(
+                    f, candidate, out.get("matched_rule")
+                )
                 chosen = candidate
-                llm_ok = True
-                notes = str(out.get("notes", ""))[:300]
+                llm_ok = consistent
+                notes = (
+                    str(out.get("notes", ""))[:300]
+                    if consistent
+                    else "LLM draft sai thu tu uu tien; Verifier se doi chieu va phu quyet"
+                )
 
     # Refund va action luon suy ra tu primary_issue bang Python (anh xa 1-1).
     decision = _decision_for(chosen, f)
@@ -129,6 +95,7 @@ def run(
         evidence_ids=[f"policy:{decision.root_cause}"],
         notes=notes,
         llm_ok=llm_ok,
+        confidence=confidence_for_draft(llm_validated=llm_ok),
     )
 
 
