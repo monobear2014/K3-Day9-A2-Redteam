@@ -6,7 +6,7 @@
   "framework": "custom multi-agent orchestration (openai-sdk + pydantic)",
   "runtime": {
     "python": "3.11",
-    "total_seconds": 1954.8,
+    "total_seconds": 3954.6,
     "cases": 50
   },
   "policy_version": "EC_POLICY_V1",
@@ -18,5 +18,5 @@
     "policy",
     "verifier"
   ],
-  "generated_at": "2026-08-05T05:11:22.309887+00:00"
+  "generated_at": "2026-08-05T08:09:28.272913+00:00"
 }
