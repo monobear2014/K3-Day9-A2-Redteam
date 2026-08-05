@@ -1,0 +1,37 @@
+# K3 Day 09 - Multi-Agent E-commerce Dispute Resolution
+# Python >= 3.11 (KHONG dung python3.9 he thong, da EOL)
+#
+# Setup chung cho ca team:
+#   python3.11 -m venv .venv
+#   source .venv/bin/activate
+#   pip install -r requirements.txt
+#
+# Kiem tra: python -c "import pandas, pydantic, openai; print('ok')"
+
+# --- Data layer: doc va join 9 file CSV trong data/ ---
+pandas>=2.2,<3.0
+
+# --- Contracts & validation ---
+# pydantic dung cho CaseFacts / AgentVerdict giua cac agent,
+# va cho Verifier check output schema truoc khi ghi file (chong hard gate).
+pydantic>=2.7,<3.0
+
+# --- LLM client ---
+# SDK openai noi chuyen duoc voi moi endpoint OpenAI-compatible:
+# Groq, Together, OpenRouter, vLLM, LM Studio, Ollama (/v1).
+# Doi base_url + api_key trong .env, ten model khai bao trong source (README muc 9.4).
+openai>=1.40,<3.0
+
+# Chi can neu chay Ollama bang native API thay vi endpoint /v1.
+ollama>=0.3,<1.0
+
+# --- Runtime helpers ---
+python-dotenv>=1.0,<2.0   # nap .env (API key, base_url) - .env KHONG commit
+tenacity>=8.2,<10.0       # retry khi LLM call timeout / rate limit
+tqdm>=4.66,<5.0           # progress bar khi chay 50 case
+rich>=13.7,<15.0          # log handoff giua cac agent cho de doc
+
+# --- Dev / test ---
+# Uu tien viet unit test cho policy rules: day la phan chiem diem cao nhat
+# (20% financial + 15% root cause + 10% action) va de sai thu tu uu tien nhat.
+pytest>=8.0,<9.0
