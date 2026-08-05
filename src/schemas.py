@@ -160,6 +160,17 @@ class PolicyVerdict(BaseVerdict):
     resolution_actions: list[ResolutionAction] = Field(default_factory=list)
 
 
+class VerifierVerdict(BaseModel):
+    """Independent reflector result used for conditional graph routing."""
+
+    passed: bool = Field(alias="pass")
+    feedback: str = ""
+    next_node: Literal["responder", "supervisor"] = "responder"
+    llm_ok: bool = False
+
+    model_config = {"populate_by_name": True}
+
+
 # =====================================================================
 # 3. OUTPUT - dung schema README muc 6. Validator chan hard gate.
 # =====================================================================

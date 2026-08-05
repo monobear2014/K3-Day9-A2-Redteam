@@ -15,9 +15,9 @@ load_dotenv()
 # Rang buoc: MOI agent chi duoc dung model <= 10B tham so (README muc 9.1).
 # Dem TONG tham so, khong phai active params: model MoE 20B la VI PHAM.
 # =====================================================================
-MODEL_NAME = "qwen2.5:7b"
-MODEL_PARAMETER_SIZE = "7B"
-MODEL_PROVIDER = "ollama"
+MODEL_NAME = "llama-3.1-8b-instant"
+MODEL_PARAMETER_SIZE = "8B"
+MODEL_PROVIDER = "groq"
 
 # Doi provider chi can doi 2 bien nay trong .env, khong sua code:
 #   Groq        https://api.groq.com/openai/v1        + llama-3.1-8b-instant

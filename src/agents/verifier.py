@@ -12,7 +12,10 @@ Confidence sinh tu muc dong thuan, khong phai so bia:
   - Lech nhau, lay ket qua deterministic                          -> 0.60
 """
 
+import json
+
 from .. import rules
+from ..llm_client import call_json
 from ..schemas import (
     AffectedEntities,
     Assessment,
@@ -23,11 +26,32 @@ from ..schemas import (
     RankedCause,
     ResponsibleParty,
     RootCauseAnalysis,
+    VerifierVerdict,
 )
+from .base import JSON_RULE, facts_brief
 
 CONF_AGREE_FULL = 0.95
 CONF_AGREE_FALLBACK = 0.80
 CONF_OVERRIDE = 0.60
+
+
+JUDGE_SYSTEM = f"""{JSON_RULE}
+
+You are the independent Verifier/Reflector, not the content generator. Judge
+the proposed output against only the supplied facts and criteria below. Do not
+rewrite the answer or infer missing facts.
+
+Mark pass=true only if EVERY criterion passes:
+1. primary_issue matches the highest-priority applicable policy rule.
+2. order, item, seller, payment, and evidence IDs appear in the supplied facts.
+3. refund is non-negative and equals payment_total for canceled/unavailable,
+   freight_total for late delivery, otherwise 0.
+4. output has the required schema fields and permitted enum values.
+5. the repository test suite must be run before release; any reported failure
+   requires pass=false.
+
+Return exactly {{"pass": <boolean>, "feedback": "<specific Vietnamese feedback>"}}.
+"""
 
 
 def run(
@@ -91,6 +115,51 @@ def run(
         "checks": _checks(f, output),
     }
     return output, report
+
+
+def judge(f: CaseFacts, output: CaseOutput, test_suite_passed: bool = True) -> VerifierVerdict:
+    """LLM-as-a-judge with deterministic gates before graph routing.
+
+    A failed verdict routes to ``supervisor``.  An unavailable judge never
+    invents a failure: local structural checks remain the safety boundary.
+    """
+    checks = _checks(f, output)
+    deterministic_pass = (
+        test_suite_passed
+        and not checks["invalid_evidence"]
+        and checks["schema_ok"]
+        and checks["refund_non_negative"]
+    )
+    if not deterministic_pass:
+        feedback = "Verifier gate failed: " + json.dumps(checks, ensure_ascii=False)
+        return VerifierVerdict(
+            **{"pass": False}, feedback=feedback, next_node="supervisor", llm_ok=False
+        )
+
+    user = json.dumps(
+        {
+            "facts": json.loads(facts_brief(f)),
+            "proposed_output": output.to_json_dict(),
+            "local_checks": checks,
+            "test_suite_passed": test_suite_passed,
+        },
+        ensure_ascii=False,
+    )
+    verdict = call_json(JUDGE_SYSTEM, user)
+    if not verdict or not isinstance(verdict.get("pass"), bool):
+        return VerifierVerdict(
+            **{"pass": True},
+            feedback="LLM judge unavailable; deterministic gates passed.",
+            next_node="responder",
+            llm_ok=False,
+        )
+    passed = verdict["pass"]
+    return VerifierVerdict(
+        **{"pass": passed},
+        feedback=str(verdict.get("feedback", ""))[:500],
+        next_node="responder" if passed else "supervisor",
+        llm_ok=True,
+    )
 
 
 def _checks(f: CaseFacts, out: CaseOutput) -> dict:
