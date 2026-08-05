@@ -1,0 +1,32 @@
+# --- Secrets (README muc 9.4: .env KHONG duoc commit) ---
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# --- Virtualenv ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- File nop bai (nen tu output/, khong commit vao repo) ---
+*.zip
+
+# --- OS / IDE ---
+.DS_Store
+.vscode/
+.idea/
+
+# --- KHONG ignore nhung file giam khao can ---
+# data/*.csv, output/*.json, logging/trace.jsonl, logging/metadata.json,
+# architecture.md, individual_*.md  -> deu phai duoc commit len repo.
+!.env.example
