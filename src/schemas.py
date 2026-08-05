@@ -158,6 +158,7 @@ class PolicyVerdict(BaseVerdict):
     responsible_parties: list[ResponsibleParty] = Field(default_factory=list)
     recommended_refund_brl: float = 0.0
     resolution_actions: list[ResolutionAction] = Field(default_factory=list)
+    confidence: float = Field(default=0.80, ge=0.0, le=1.0)
 
 
 # =====================================================================

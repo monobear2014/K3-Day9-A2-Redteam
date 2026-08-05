@@ -9,6 +9,7 @@ import pytest
 
 from src import rules
 from src.schemas import CaseFacts, ItemFact, PaymentFact
+from src.tools.policy_tools import is_priority_consistent, map_policy_codes
 
 
 def make_facts(**kw) -> CaseFacts:
@@ -148,6 +149,29 @@ def test_split_payment_beats_unsupported_claim():
         make_facts(delivered_late=False, payment_row_count=2, payment_matches=True)
     )
     assert d.primary_issue == "valid_split_payment"
+
+
+def test_policy_rejects_valid_but_lower_priority_llm_choice():
+    f = make_facts(
+        delivered_late=True,
+        carrier_handoff_late=False,
+        payment_row_count=2,
+        payment_matches=True,
+    )
+    assert not is_priority_consistent(f, "valid_split_payment", 5)
+    assert is_priority_consistent(f, "late_delivery_logistics", 4)
+
+
+def test_policy_requires_matching_rule_number():
+    f = make_facts(order_status="canceled", payment_total_brl=115.0)
+    assert not is_priority_consistent(f, "canceled_order_paid", 2)
+    assert not is_priority_consistent(f, "canceled_order_paid", True)
+
+
+def test_policy_code_mapping():
+    mapped = map_policy_codes("late_delivery_seller")
+    assert mapped.root_cause_code == "SELLER_HANDOFF_AFTER_LIMIT"
+    assert mapped.resolution_action == "refund_freight"
 
 
 def test_split_payment_not_reconciled_falls_through():

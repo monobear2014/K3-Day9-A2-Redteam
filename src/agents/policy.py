@@ -1,4 +1,4 @@
-"""Policy Agent - ap EC_POLICY_V1.
+"""Policy Agent - ap EC_POLICY_V1 to isolated, cleaned CaseFacts.
 
 OWNER: P4
 
@@ -7,9 +7,12 @@ dua tren bang chung 3 agent phia truoc handoff sang. Cac thu dan xuat tu
 primary_issue (root cause, party, refund, action) deu la anh xa 1-1 nen de Python
 suy ra - khong co ly do bat model 7B nho lai bang tra cuu.
 
-TODO(P4): phan de sai nhat la THU TU UU TIEN. Neu model hay chon rule 5/6 trong khi
-rule 3/4 da khop, them vi du doi lap vao SYSTEM va viet test trong tests/test_rules.py.
+The agent never accesses the database/CSV.  Its only inputs are CaseFacts and
+the three upstream verdicts.  Python validates the LLM draft against the first
+matching rule before any regulated code, refund, party, or action is emitted.
 """
+
+from pathlib import Path
 
 from .. import rules
 from ..llm_client import call_json
@@ -22,26 +25,11 @@ from ..schemas import (
     RankedCause,
     ResponsibleParty,
 )
+from ..tools.policy_tools import confidence_for_draft, is_priority_consistent
 from .base import JSON_RULE, facts_brief
 
-SYSTEM = f"""{JSON_RULE}
-
-Vai tro cua ban: Policy Officer, ap dung EC_POLICY_V1.
-Chon DUNG MOT primary_issue, xet theo THU TU UU TIEN tu tren xuong.
-Rule dau tien khop la ket qua cuoi cung - khong duoc xet tiep rule ben duoi.
-
-1. canceled_order_paid     : order_status = "canceled" VA payment_total_brl > 0
-2. unavailable_order_paid  : order_status = "unavailable" VA payment_total_brl > 0
-3. late_delivery_seller    : delivered_late = true VA carrier_handoff_late = true
-4. late_delivery_logistics : delivered_late = true VA carrier_handoff_late = false
-5. valid_split_payment     : payment_row_count >= 2 VA payment_matches = true
-6. unsupported_late_claim  : delivered_late = false VA payment_matches = true
-
-Loi khieu nai cua khach KHONG phai bang chung. Chi cham vao du lieu.
-
-Tra ve JSON dung dang:
-{{"primary_issue": "<mot trong 6 gia tri tren>", "matched_rule": <1-6>, "notes": "<mot cau tieng Viet>"}}
-"""
+PROMPT_PATH = Path(__file__).with_name("prompts") / "policy.txt"
+SYSTEM = f"{JSON_RULE}\n\n{PROMPT_PATH.read_text(encoding='utf-8')}"
 
 VALID_ISSUES = set(rules.ISSUE_MAP.keys())
 
@@ -70,10 +58,14 @@ def run(
         out = call_json(SYSTEM, user)
         if out:
             candidate = out.get("primary_issue")
-            if candidate in VALID_ISSUES:
+            if candidate in VALID_ISSUES and is_priority_consistent(
+                f, candidate, out.get("matched_rule")
+            ):
                 chosen = candidate
                 llm_ok = True
                 notes = str(out.get("notes", ""))[:300]
+            else:
+                notes = "LLM draft sai thứ tự ưu tiên; dùng fallback deterministic"
 
     # Refund va action luon suy ra tu primary_issue bang Python (anh xa 1-1).
     decision = _decision_for(chosen, f)
@@ -88,6 +80,7 @@ def run(
         evidence_ids=[f"policy:{decision.root_cause}"],
         notes=notes,
         llm_ok=llm_ok,
+        confidence=confidence_for_draft(llm_validated=llm_ok),
     )
 
 
