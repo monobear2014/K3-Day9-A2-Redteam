@@ -34,9 +34,10 @@ Cac chuyen vien co the giao:
 - "delivery"    : so ngay giao thuc te voi han giao, quy trach nhiem tre.
 
 Huong dan giao viec:
-- Don "canceled" hoac "unavailable": can order_seller va payment. delivery it y nghia.
-- Don giao tre (delivered_late = true): can ca ba.
-- Don giao dung han, nhieu dong thanh toan: can payment va order_seller.
+- delivered_late = true HOAC null -> BAT BUOC co "delivery" trong danh sach.
+  Day la quy tac cung, khong duoc bo qua.
+- Don "canceled" hoac "unavailable": can order_seller va payment.
+- payment_row_count >= 2: bat buoc co "payment".
 - Khi phan van: giao ca ba.
 
 Tra ve JSON dung dang:
@@ -66,6 +67,22 @@ def plan(f: CaseFacts) -> DispatchPlan:
     if not chosen:
         # Model tra rong hoac bia ten agent -> khong tin, chay het.
         chosen, forced = list(DOMAIN_AGENTS), list(DOMAIN_AGENTS)
+
+    # San cung: co trieu chung nao thi agent tuong ung phai chay, du model quen.
+    # Luot chay dau tien cho thay model chi giao "delivery" 2/50 lan trong khi co
+    # 16 case giao tre - de mac model tu quyet la agent do gan nhu khong duoc dung.
+    required: list[str] = []
+    if f.delivered_late is not False:  # true hoac None (chua giao)
+        required.append("delivery")
+    if f.payment_row_count >= 2:
+        required.append("payment")
+    if f.order_status in ("canceled", "unavailable"):
+        required.append("order_seller")
+
+    for agent in required:
+        if agent not in chosen:
+            chosen.append(agent)
+            forced.append(agent)
 
     focus = out.get("focus")
     return DispatchPlan(

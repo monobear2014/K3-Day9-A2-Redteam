@@ -34,7 +34,9 @@ LLM_API_KEY = os.getenv("LLM_API_KEY") or "ollama"
 USE_LLM = True
 
 TEMPERATURE = 0.0  # bai nay can tinh on dinh, khong can sang tao
-MAX_TOKENS = 800
+# 800 lam mot so call bi "max completion tokens reached before generating a valid
+# document" o luot chay dau - JSON mode cua Groq bat buoc tra ve document hoan chinh.
+MAX_TOKENS = 1400
 LLM_TIMEOUT_S = 60
 LLM_MAX_RETRIES = 3
 
